@@ -43,7 +43,7 @@ int main(){
 
 	socklen_t len = (int)sizeof(client_addr);
 
-	const char *hello = "Hello client"; 
+	char hello[buffersize] = "Hello client\n"; 
 
 
     while(1){
@@ -51,9 +51,11 @@ int main(){
 
     	n = recvfrom(sockfd, (char *)buffer, buffersize, MSG_WAITALL, (struct sockaddr*)&client_addr, &len);
     	
-		std::cout << n;
-		std::cout.flush();
+		std::cout << buffer << std::endl;
 
+		memset(&buffer, 0, buffersize);
+
+		std::cin >> hello;
     	sendto(sockfd, hello, strlen(hello),  
         MSG_CONFIRM, (const struct sockaddr *) &client_addr, 
             len); 
