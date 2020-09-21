@@ -14,7 +14,7 @@ def compile_and_run():
 	os.system('echo loading...')
 
 	try:
-		out = subprocess.check_output(['c++', '-o','run', fn])
+		out = subprocess.check_output(['c++', '-o','run', fn,'-lpthread'])
 	except:
 		return
 
