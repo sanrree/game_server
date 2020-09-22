@@ -1,22 +1,13 @@
-// Example program
-#include <iostream>
-#include <cstring>
 #include <thread>
+#include <iostream>
 
-void change(char* str){
-    	char sta[10] = "adasdas";
-    	strncpy(str,sta,10);
+void run(int a){
+    std::cout << "Hahoe";
 }
 
 int main()
 {
-	char arr[10];
-  
-  	std::thread t(change,arr);
-	t.detach();
-
-while(1){
-  	std::cout << "Hello, " << arr;
-}
-
+    std::thread t1(run,5);
+    t1.join();
+    return 0;
 }
