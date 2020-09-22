@@ -21,7 +21,6 @@ void listen_input(char *str)
 	while (1)
 	{
 		std::cin >> str;
-		std::cout << str;
 	}
 }
 
@@ -70,24 +69,20 @@ int main()
 	{
 
 		n = recvfrom(sockfd, (char *)buffer, buffersize, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
-
 		if (n > 0)
 		{
-			std::cout << buffer << std::endl;
+			std::cout << buffer;
+			memset(&buffer, 0, buffersize);
 		}
 
-		if (message[0] == '\0')
+		if (message[0] != '\0')
 		{
-			continue;
-		}
-		std::cout << message << std::endl;
+			std::cout << message << std::endl;
+			message[0] = '\0';
 
-		sendto(sockfd, message, strlen(message),
+			sendto(sockfd, message, strlen(message),
 			   MSG_DONTROUTE, (const struct sockaddr *)&client_addr, len);
-
-		memset(&buffer, 0, buffersize);
-		memset(&message, 0, buffersize);
-		message[0] = '\0';
+		}
 	}
 
 	return 0;
