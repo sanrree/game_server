@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fcntl.h>
 #include <thread>
+#include <unistd.h>
 
 #define PORT_NO 8081
 #define BUFFER_SIZE 1024
@@ -37,11 +38,10 @@ int main()
 	}
 
 	int optval = 1;
-	int a = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-	std::cout << a << std::endl;
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval));
 
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(PORT_NO);
 
 	if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
@@ -49,7 +49,7 @@ int main()
 		error("Socket binding failed");
 	}
 
-	fcntl(sockfd, F_SETFL, O_NONBLOCK);
+	// fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
 	listen(sockfd, 1);
 
@@ -81,7 +81,7 @@ int main()
 			message[0] = '\0';
 
 			sendto(sockfd, message, strlen(message),
-			   MSG_DONTROUTE, (const struct sockaddr *)&client_addr, len);
+				   MSG_DONTROUTE, (const struct sockaddr *)&client_addr, len);
 		}
 	}
 
