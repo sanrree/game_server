@@ -1,1 +1,0 @@
-/usr/bin/c++   -Wall -std=c++14 -lpthread   CMakeFiles/server.dir/src/main.cpp.o  -o server 
