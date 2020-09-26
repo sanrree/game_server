@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/plato/Documents/game_server",
+  "command": "/usr/bin/c++     -Wall -std=c++14 -lpthread   -o CMakeFiles/server.dir/src/main.cpp.o -c /home/plato/Documents/game_server/src/main.cpp",
+  "file": "/home/plato/Documents/game_server/src/main.cpp"
+}
+]

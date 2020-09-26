@@ -1,0 +1,3 @@
+/home/plato/Documents/game_server/CMakeFiles/rebuild_cache.dir
+/home/plato/Documents/game_server/CMakeFiles/server.dir
+/home/plato/Documents/game_server/CMakeFiles/edit_cache.dir

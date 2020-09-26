@@ -38,10 +38,10 @@ int main()
 	}
 
 	int optval = 1;
-	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval));
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_addr.s_addr = atol("127.0.0.1");
 	serv_addr.sin_port = htons(PORT_NO);
 
 	if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
@@ -49,7 +49,7 @@ int main()
 		error("Socket binding failed");
 	}
 
-	// fcntl(sockfd, F_SETFL, O_NONBLOCK);
+	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
 	listen(sockfd, 1);
 
@@ -69,8 +69,10 @@ int main()
 	{
 
 		n = recvfrom(sockfd, (char *)buffer, buffersize, MSG_WAITALL, (struct sockaddr *)&client_addr, &len);
+
 		if (n > 0)
 		{
+			std::cout << "asdasda";
 			std::cout << buffer;
 			memset(&buffer, 0, buffersize);
 		}

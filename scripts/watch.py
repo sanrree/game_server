@@ -14,11 +14,12 @@ def compile_and_run():
     os.system('echo loading...')
 
     try:
-        command = ['c++', '-std=c++11', '-o', 'run', fn, '-lpthread']
+        command = ['../make']
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         process.wait()
-        print process.returncode
-    except:
+        print(process.returncode)
+    except Exception as e:
+        print(e)
         return
 
     os.system('clear')

@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/plato/Documents/game_server/src/main.cpp
+sys/socket.h
+-
+arpa/inet.h
+-
+netinet/in.h
+-
+string.h
+-
+stdlib.h
+-
+iostream
+-
+fcntl.h
+-
+thread
+-
+unistd.h
+-
+
