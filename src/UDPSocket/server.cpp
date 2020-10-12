@@ -1,6 +1,7 @@
 #include "socket.cpp"
+#include "inputLooper.cpp"
 
-class UDPServer : UDPSocket
+class UDPServer : UDPSocket, InputLooperDelegate
 {
 public:
     void start(const char *address, int port)
@@ -18,6 +19,12 @@ public:
         }
 
         startInputListenerAsync();
-        startInputListener();
+
+        InputLooper looper = InputLooper();
+        looper.delegate = this;
+    }
+
+    void onInputSubmit(char* message){
+        
     }
 };
