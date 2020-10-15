@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 
+#define NON_BLOCKING O_NONBLOCK
 #define BUFFER_SIZE 1024
 
 void error(const char *msg)
@@ -16,7 +17,6 @@ void error(const char *msg)
 
 class UDPSocket
 {
-private:
 protected:
     UDPSocket()
     {
@@ -30,46 +30,54 @@ protected:
 
     int recieved_msgs;
 
-    char buffer[BUFFER_SIZE], message[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
 
-    sockaddr_in recv_addr, send_addr;
+    sockaddr_in listen_addr, recv_addr;
 
-    void startInputListener()
+public:
+    virtual void setListenerAddress(const char *address, int port)
     {
-        socklen_t send_addr_size = sizeof(send_addr);
+        listen_addr.sin_family = AF_INET;
+        listen_addr.sin_addr.s_addr = inet_addr(address);
+        listen_addr.sin_port = htons(port);
+    };
+
+    virtual void listen()
+    {
+        socklen_t recv_addr_size = sizeof(recv_addr);
 
         while (1)
         {
-            std::cin.getline(message, sizeof(message));
-            strcat(message, "\n");
-            sendto(sockfd, message, strlen(message), MSG_DONTROUTE, (sockaddr *)&send_addr, send_addr_size);
-            memset(&message, 0, BUFFER_SIZE);
-        }
-    }
-
-    void startInputListenerAsync()
-    {
-        std::thread t(&UDPSocket::startListenerLoop, this);
-        t.detach();
-    }
-
-    void startListenerLoop()
-    {
-        socklen_t send_addr_size = sizeof(send_addr);
-
-        while (1)
-        {
-            recieved_msgs = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *)&send_addr, &send_addr_size);
+            recieved_msgs = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *)&recv_addr, &recv_addr_size);
 
             if (recieved_msgs > 0)
             {
-                std::cout << inet_ntoa(send_addr.sin_addr) << std::endl;
-                std::cout << buffer;
+                char tmp[sizeof(buffer)];
+                strcpy(tmp, buffer);
+
+                onMessageReceive(tmp, recv_addr);
+
                 memset(&buffer, 0, BUFFER_SIZE);
+                memset((char *)&recv_addr, 0, recv_addr_size);
             }
         }
     }
 
-public:
-    virtual void start(const char *address, int port) = 0;
+    virtual void sendMessage(char *message, sockaddr_in address)
+    {
+        socklen_t addr_size = sizeof(address);
+        sendto(sockfd, message, strlen(message), MSG_DONTROUTE, (sockaddr *)&address, addr_size);
+    };
+
+    virtual void setFlag(int flag)
+    {
+        int opts = fcntl(sockfd, F_GETFL) | flag;
+
+        if (fcntl(sockfd, F_SETFL, opts) < 0)
+        {
+            error("set flag error");
+        }
+    }
+
+    virtual void onMessageReceive(char *message, sockaddr_in address) = 0;
 };

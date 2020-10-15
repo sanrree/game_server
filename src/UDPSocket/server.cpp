@@ -1,30 +1,30 @@
 #include "socket.cpp"
-#include "inputLooper.cpp"
 
-class UDPServer : UDPSocket, InputLooperDelegate
+class UDPServer : public UDPSocket
 {
+private:
+    sockaddr_in last_client_;
+
 public:
-    void start(const char *address, int port)
+    void listen()
     {
-        recv_addr.sin_family = AF_INET;
-        recv_addr.sin_addr.s_addr = inet_addr(address);
-        recv_addr.sin_port = htons(port);
-
-        if (bind(sockfd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
-            error("Socket binding failed");
-
-        if (fcntl(sockfd, F_SETFL, O_NONBLOCK) < 0)
+        if (bind(sockfd, (struct sockaddr *)&listen_addr, sizeof(listen_addr)) < 0)
         {
-            error("fcntl call error");
+            error("Socket binding failed");
         }
 
-        startInputListenerAsync();
-
-        InputLooper looper = InputLooper();
-        looper.delegate = this;
+        UDPSocket::listen();
     }
 
-    void onInputSubmit(char* message){
-        
+    void send(char *message)
+    {
+        strcat(message, "\n");
+        sendMessage(message, last_client_);
+    }
+
+    void onMessageReceive(char *message, sockaddr_in address)
+    {
+        std::cout << message;
+        last_client_ = address;
     }
 };

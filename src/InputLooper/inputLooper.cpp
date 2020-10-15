@@ -1,16 +1,14 @@
 #include <iostream>
+#include "InputLooperDelegate.cpp"
 
 class InputLooper
 {
 private:
-    char *message_;
-
     bool isLooping_ = false;
 
 public:
     InputLooperDelegate *delegate = nullptr;
 
-protected:
     void startInputLoop(unsigned int messageSize)
     {
         if (isLooping_)
@@ -21,16 +19,14 @@ protected:
 
         isLooping_ = true;
 
-        message_ = new char[messageSize];
-
-        char msgBuffer[messageSize];
+        char message[messageSize];
 
         while (isLooping_)
         {
-            std::cin.getline(message_, sizeof(message_));
+            std::cin.getline(message, sizeof(message));
             if (delegate != nullptr)
             {
-                (*delegate).onInputSubmit(msgBuffer);
+                (*delegate).onInputSubmit(message);
             }
         }
     }
@@ -38,18 +34,5 @@ protected:
     void stopInputLoop()
     {
         isLooping_ = false;
-        delete message_;
     }
-
-public:
-    ~InputLooper()
-    {
-        delete message_;
-    }
-};
-
-class InputLooperDelegate
-{
-public:
-    virtual void onInputSubmit(char *message);
 };
