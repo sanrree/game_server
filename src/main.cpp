@@ -1,29 +1,75 @@
+#include <map>
 #include "./UDPSocket/server.cpp"
 #include "./InputLooper/inputLooper.cpp"
 
-class ServerController : public InputLooperDelegate
+class IOSocket : public SocketReceiverDelegate, InputLooperDelegate
 {
 private:
 	UDPServer &server_;
-	InputLooper &looper_;
+
+	std::map<int, sockaddr_in> clients;
+
+	int c_id = 0;
 
 public:
-	ServerController(UDPServer &server, InputLooper &looper)
-		: server_(server), looper_(looper)
+	IOSocket(UDPServer &server) : server_(server)
 	{
+		server_.delegate = this;
 	}
 
 	void start()
 	{
-		std::thread t(&UDPServer::listen, &server_);
+		/* **TEST** */
+
+		InputLooper looper = InputLooper();
+		looper.delegate = this;
+
+		std::thread t(&InputLooper::startInputLoop, &looper, BUFFER_SIZE);
 		t.detach();
 
-		looper_.startInputLoop(BUFFER_SIZE);
+		/* **TEST** */
+
+		server_.listen();
+	}
+
+	void broadcast(char *message)
+	{
+		strcat(message, "\n");
+
+		for (auto &client : clients)
+		{
+			server_.sendMessage(message, client.second);
+		}
+	}
+
+	void onMessageReceive(char *message, sockaddr_in address)
+	{
+		std::cout << message;
+
+		bool newClient = true;
+
+		for (auto &client : clients)
+		{
+			if (!UDPSocket::compareAdresses(client.second, address))
+			{
+				server_.sendMessage(message, client.second);
+			}
+			else
+			{
+				newClient = false;
+			}
+		}
+
+		if (newClient)
+		{
+			std::cout << "New client added" << std::endl;
+			clients.insert({++c_id, address});
+		}
 	}
 
 	void onInputSubmit(char *message)
 	{
-		server_.send(message);
+		broadcast(message);
 	}
 };
 
@@ -31,14 +77,10 @@ int main()
 {
 	UDPServer server = UDPServer();
 
-	server.setListenerAddress("127.0.0.1", 8081);
+	server.setListenerAddress("192.168.195.132", 8081);
 	server.setFlag(NON_BLOCKING);
 
-	InputLooper looper = InputLooper();
-
-	ServerController sc = ServerController(server, looper);
-
-	looper.delegate = &sc;
+	IOSocket sc = IOSocket(server);
 
 	sc.start();
 

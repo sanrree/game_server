@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include "./socketReceiverDelegate.cpp"
 
 #define NON_BLOCKING O_NONBLOCK
 #define BUFFER_SIZE 1024
@@ -35,12 +36,7 @@ protected:
     sockaddr_in listen_addr, recv_addr;
 
 public:
-    virtual void setListenerAddress(const char *address, int port)
-    {
-        listen_addr.sin_family = AF_INET;
-        listen_addr.sin_addr.s_addr = inet_addr(address);
-        listen_addr.sin_port = htons(port);
-    };
+    SocketReceiverDelegate *delegate = nullptr;
 
     virtual void listen()
     {
@@ -48,14 +44,17 @@ public:
 
         while (1)
         {
-            recieved_msgs = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE, MSG_WAITALL, (struct sockaddr *)&recv_addr, &recv_addr_size);
+            recieved_msgs = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE, MSG_WAITALL, (sockaddr *)&recv_addr, &recv_addr_size);
 
             if (recieved_msgs > 0)
             {
                 char tmp[sizeof(buffer)];
                 strcpy(tmp, buffer);
 
-                onMessageReceive(tmp, recv_addr);
+                if (delegate != nullptr)
+                {
+                    (*delegate).onMessageReceive(tmp, recv_addr);
+                }
 
                 memset(&buffer, 0, BUFFER_SIZE);
                 memset((char *)&recv_addr, 0, recv_addr_size);
@@ -63,13 +62,19 @@ public:
         }
     }
 
-    virtual void sendMessage(char *message, sockaddr_in address)
+    void setListenerAddress(const char *address, int port)
     {
-        socklen_t addr_size = sizeof(address);
-        sendto(sockfd, message, strlen(message), MSG_DONTROUTE, (sockaddr *)&address, addr_size);
+        setListenerAddress(inet_addr(address), port);
     };
 
-    virtual void setFlag(int flag)
+    void setListenerAddress(int address, int port)
+    {
+        listen_addr.sin_family = AF_INET;
+        listen_addr.sin_addr.s_addr = address;
+        listen_addr.sin_port = htons(port);
+    };
+
+    void setFlag(int flag)
     {
         int opts = fcntl(sockfd, F_GETFL) | flag;
 
@@ -79,5 +84,15 @@ public:
         }
     }
 
-    virtual void onMessageReceive(char *message, sockaddr_in address) = 0;
+    void sendMessage(char *message, sockaddr_in address)
+    {
+        socklen_t addr_size = sizeof(address);
+        sendto(sockfd, message, strlen(message), MSG_DONTROUTE, (sockaddr *)&address, addr_size);
+    };
+
+    static bool compareAdresses(sockaddr_in a, sockaddr_in b)
+    {
+        return (a.sin_addr.s_addr == b.sin_addr.s_addr) &&
+               (a.sin_port == b.sin_port);
+    }
 };

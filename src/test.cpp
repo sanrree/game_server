@@ -1,5 +1,6 @@
 #include "./UDPSocket/client.cpp"
 #include "./InputLooper/inputLooper.cpp"
+#include <chrono>
 
 class SocketClientController : public InputLooperDelegate
 {
@@ -15,6 +16,15 @@ public:
     {
         std::thread t(&UDPClient::listen, &client_);
         t.detach();
+
+        while (1)
+        {
+            std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+
+            char *time = (char *)std::to_string(ms.count()).c_str();
+            client_.send(time);
+        }
 
         looper_.startInputLoop(BUFFER_SIZE);
     }
