@@ -38,13 +38,12 @@ public:
 
 		for (auto &client : clients)
 		{
-			server_.sendMessage(message, client.second);
+			server_.sendMessage(message, 12, client.second);
 		}
 	}
 
-	void onMessageReceive(char *message, sockaddr_in address)
+	void onMessageReceive(byte *message, sockaddr_in address)
 	{
-		std::cout << message;
 
 		bool newClient = true;
 
@@ -52,7 +51,7 @@ public:
 		{
 			if (!UDPSocket::compareAdresses(client.second, address))
 			{
-				server_.sendMessage(message, client.second);
+				server_.sendMessage((char *)message, 12, client.second);
 			}
 			else
 			{

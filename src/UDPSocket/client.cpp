@@ -3,7 +3,7 @@
 class UDPClient : public UDPSocket
 {
 public:
-    void onMessageReceive(char *message, sockaddr_in address)
+    void onMessageReceive(byte *message, sockaddr_in address)
     {
         std::cout << message;
     }
@@ -11,6 +11,6 @@ public:
     void send(char *message)
     {
         strcat(message, "\n");
-        sendMessage(message, listen_addr);
+        sendMessage(message, sizeof(message), listen_addr);
     }
 };

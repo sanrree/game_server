@@ -1,20 +1,7 @@
 #include <iostream>
 #include <string.h>
 #include <thread>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <fcntl.h>
-#include <arpa/inet.h>
-#include "./socketReceiverDelegate.cpp"
-
-#define NON_BLOCKING O_NONBLOCK
-#define BUFFER_SIZE 1024
-
-void error(const char *msg)
-{
-    perror(msg);
-    exit(1);
-}
+#include "socketHeader.h"
 
 class UDPSocket
 {
@@ -31,7 +18,7 @@ protected:
 
     int recieved_msgs;
 
-    char buffer[BUFFER_SIZE];
+    byte buffer[BUFFER_SIZE];
 
     sockaddr_in listen_addr, recv_addr;
 
@@ -44,16 +31,13 @@ public:
 
         while (1)
         {
-            recieved_msgs = recvfrom(sockfd, (char *)buffer, BUFFER_SIZE, MSG_WAITALL, (sockaddr *)&recv_addr, &recv_addr_size);
+            recieved_msgs = recvfrom(sockfd, buffer, BUFFER_SIZE, MSG_WAITALL, (sockaddr *)&recv_addr, &recv_addr_size);
 
             if (recieved_msgs > 0)
             {
-                char tmp[sizeof(buffer)];
-                strcpy(tmp, buffer);
-
                 if (delegate != nullptr)
                 {
-                    (*delegate).onMessageReceive(tmp, recv_addr);
+                    (*delegate).onMessageReceive(buffer, recv_addr);
                 }
 
                 memset(&buffer, 0, BUFFER_SIZE);
@@ -84,10 +68,10 @@ public:
         }
     }
 
-    void sendMessage(char *message, sockaddr_in address)
+    void sendMessage(char *message, int size, sockaddr_in address)
     {
         socklen_t addr_size = sizeof(address);
-        sendto(sockfd, message, strlen(message), MSG_DONTROUTE, (sockaddr *)&address, addr_size);
+        sendto(sockfd, message, size, MSG_DONTROUTE, (sockaddr *)&address, addr_size);
     };
 
     static bool compareAdresses(sockaddr_in a, sockaddr_in b)
