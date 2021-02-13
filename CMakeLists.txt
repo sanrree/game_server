@@ -11,5 +11,3 @@ set (source_dir "${PROJECT_SOURCE_DIR}/src/")
 file (GLOB source_files "${source_dir}/*.cpp")
 
 add_executable (server ${source_dir}/main.cpp)
-add_executable (client ${source_dir}/test.cpp)
-
