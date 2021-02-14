@@ -1,11 +1,18 @@
+#pragma once
 #include "Commons.h"
 #include "SocketReceiverDelegate.h"
 #include <thread>
+#include <map>
+#include <mutex>
 
-class TCPListener
+class TCPServer
 {
 private:
     sockaddr_in listen_addr_;
+
+    static std::mutex mutex_;
+
+    std::map<int, sockaddr> clients_;
 
     int sockfd_;
 
@@ -16,14 +23,15 @@ private:
     void handleClient(int clientfd);
 
     void setAddress(int address, int port);
+
 public:
     SocketReceiverDelegate *delegate = nullptr;
 
-    TCPListener();
+    TCPServer();
 
     void start(int port);
 
-    void send(const char *data, sockaddr addr);
+    void send(int client, byte *data);
 
     void setFlag(int flag);
 

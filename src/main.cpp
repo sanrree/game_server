@@ -1,8 +1,11 @@
-#include "./TCPListener/TCPListener.cpp"
+#include "./TCPServer/TCPServer.cpp"
+#include "./Game/GameServer.cpp"
 
 int main()
 {
-	TCPListener server = TCPListener();
+	TCPServer server = TCPServer();
+
+	GameServer gameServer = GameServer(&server);
 
 	server.start(8081);
 
